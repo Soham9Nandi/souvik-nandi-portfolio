@@ -117,11 +117,21 @@ const tools = [
 
 function JobCard({ job }) {
   const ref = useRef(null)
-  // Default to "already visible, no animation" — the safe state per
-  // DESIGN_SYSTEM.md's "content must never depend on the animation firing
-  // to become visible" rule. useLayoutEffect runs synchronously before the
-  // browser paints, so if this entry is actually below the fold we switch
-  // it to the scroll-reveal version before the user ever sees a frame.
+  // Default to "already visible" — the safe state per DESIGN_SYSTEM.md's
+  // "content must never depend on the animation firing to become visible"
+  // rule. useLayoutEffect runs synchronously before the browser paints, so
+  // if this entry is actually below the fold we switch it to the
+  // scroll-reveal version before the user ever sees a frame.
+  //
+  // Both branches still animate — the difference is *what* triggers the
+  // entrance. In-view entries use `animate`, which fires on mount and
+  // doesn't depend on any async browser API, so it's exactly as reliable
+  // as the Home hero's entrance (no IntersectionObserver-timing risk).
+  // Below-the-fold entries use `whileInView`, since for those the animation
+  // firing exactly when scrolled into view is the actual desired effect.
+  // Distinct `key`s force a clean remount when the branch changes (before
+  // paint, so it's invisible to the user) rather than Framer Motion having
+  // to reconcile an in-place prop swap between two different trigger modes.
   const [animateOnScroll, setAnimateOnScroll] = useState(false)
 
   useLayoutEffect(() => {
@@ -150,6 +160,7 @@ function JobCard({ job }) {
   if (animateOnScroll) {
     return (
       <motion.article
+        key="scroll"
         ref={ref}
         className="work-item"
         initial={{ opacity: 0, y: 20 }}
@@ -163,9 +174,16 @@ function JobCard({ job }) {
   }
 
   return (
-    <article ref={ref} className="work-item">
+    <motion.article
+      key="mount"
+      ref={ref}
+      className="work-item"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       {content}
-    </article>
+    </motion.article>
   )
 }
 
