@@ -93,3 +93,189 @@ Files touched: `souvik-nandi-potfolio/src/pages/Home.jsx`,
 `souvik-nandi-potfolio/src/index.css`
 
 Status: done
+
+---
+
+## [2026-09-15] Set up version control (source: claude code)
+
+Initialized git and pushed the Sprint 1 state to GitHub.
+
+- Project wasn't a git repo yet (`git status` at project root failed with
+  "not a git repository"). Ran `git init` at the project root (not inside
+  `souvik-nandi-potfolio/`), so the repo covers the whole project —
+  docs, source docx/photo, and the Vite app together.
+- Confirmed root docs: `CLAUDE.md` and `DESIGN_LOG.md` exist.
+  **`DESIGN_SYSTEM.md` does not exist** — not created, per instructions to
+  only report, not create/overwrite.
+- Reviewed `souvik-nandi-potfolio/.gitignore` (the Vite-generated one):
+  `node_modules`, `dist`, and `dist-ssr` are explicitly excluded — confirmed
+  in practice too, `git status` after staging did not pick up
+  `node_modules`. **Gap:** the only env-related pattern is `*.local`, which
+  covers `.env.local` / `.env.production.local` etc. but not a bare `.env`
+  file. No `.env` file exists in the project right now, so nothing is at
+  risk today, but a plain `.env` added later would not be ignored. Flagging
+  rather than editing the file, since this task was scoped to "confirm," not
+  "fix" — let me know if you want `.env` added to the ignore list.
+- Staged and committed everything present at the project root as-is:
+  `.claude/launch.json`, `CLAUDE.md`, `DESIGN_LOG.md`, the CV and
+  publications `.docx` source files, the profile photo, and the full
+  `souvik-nandi-potfolio/` app. Reviewed the staged file list before
+  committing (via `git status`) — nothing unexpected or secret-looking, and
+  `node_modules` was correctly absent. Single root commit
+  (`f3cc7b3`, on branch `master` — git's default name, not renamed to
+  `main` since that wasn't requested).
+- No `origin` remote existed. Asked for the repo URL rather than guessing;
+  got `git@github.com:Soham9Nandi/souvik-nandi-portfolio.git` and added it.
+- Ran `git fetch origin` then `git ls-remote origin` before pushing anything
+  — the remote returned no refs at all (fully empty, not even an
+  auto-generated README), so pushed normally: `git push -u origin master`.
+  No force-push, no merge needed.
+
+Assumptions / notes for review:
+- Branch is `master`, not `main` — flagging in case you'd prefer to rename
+  it (`git branch -m main` + re-push) before more history builds up on it.
+- The CV `.docx`, publications `.docx`, and profile photo were committed
+  as-is per "commit the current state of the project as-is." These contain
+  personal contact details (email, phone) already intended for a
+  recruiter-facing site, but note they're now in git history on a repo
+  that's presumably going public — say the word if any of that should be
+  kept out of version control instead.
+
+Files touched: (repo-level only — no source files changed) `.git/` created;
+remote `origin` added in git config.
+
+Status: done
+
+---
+
+## [2026-09-15] Design system tokens + hero layout fix + Experience mobile bug (source: claude code)
+
+Created `DESIGN_SYSTEM.md` verbatim as provided (color/type/spacing tokens,
+rationale, Home hero and Experience layout specs). Then implemented the six
+requested changes against it.
+
+**1. Color/type/spacing tokens as real CSS custom properties**
+- Replaced the old placeholder palette (`--text`, `--text-muted`, generic
+  burgundy accent) with the exact tokens from DESIGN_SYSTEM.md: `--bg`,
+  `--surface`, `--ink`, `--ink-muted`, `--accent`, `--border`, light and
+  dark, applied both via the `prefers-color-scheme` fallback and the
+  `[data-theme]` overrides the existing theme toggle already drives.
+  `--surface` is now used for `.stat-badge` and `.skills-grid li` fills
+  (the doc's "cards, badge fills" use case).
+- Added Newsreader (headings, weight capped at 500) and Inter (body) from
+  Google Fonts via `<link>` tags in `index.html`, with `preconnect` hints.
+- Implemented the type scale table (h1/h2/h3 mobile → desktop sizes at
+  768px, 1.3 heading / 1.6 body line-height, 65ch line-length cap on
+  `.home-summary` and `.work-item ul`).
+- Spacing scale (`0.5rem`–`3rem`) added as `--space-xs` … `--space-2xl`.
+  **Assumption:** DESIGN_SYSTEM.md gave the rem values but not variable
+  names for this scale (unlike the color table, which named every token) —
+  I chose the `--space-*` naming; flag if you want different names.
+  **Constraint, not a choice:** `--bp-sm/md/lg` are documented as a CSS
+  comment at the top of `index.css` but the actual breakpoints are
+  hardcoded px values inside each `@media` rule — CSS custom properties
+  can't be referenced inside a media query condition, so there was no way
+  to make those three literally live as custom properties and still work.
+
+**2–4. Home hero fixes**
+- Element order now matches the "Home hero layout" spec exactly: photo,
+  name, title, summary, badges, contact — same order in the DOM for both
+  breakpoints. Mobile (base styles) stacks that order top-to-bottom as-is.
+  At `min-width: 768px` the hero switches to a row and `.home-content` gets
+  `order: 1` / `.home-photo` gets `order: 2`, so photo displays on the
+  right while staying first in the DOM/reading order.
+- Badges moved from between title/summary to after the summary paragraph,
+  matching the spec's element order.
+- Photo resized to 88px (mobile) / 220px (desktop) per the ASCII diagrams
+  in the spec — down from the 200px/320px I'd used in the previous pass.
+  Drop shadow removed.
+- Rebuilt the hero as a single `motion.section` wrapping both photo and
+  content in one fade+slide-up, rather than two separately-timed
+  `motion.div`s, to match "photo and text block animate in together as one
+  moment" in the Motion section.
+- Breakpoint changed 720px → 768px to match `--bp-md`; same value now used
+  everywhere (Home hero, type scale, site padding).
+
+**5. Container width:** left at 1040px, unchanged, per instruction.
+
+**6. Experience-page mobile bug — root cause confirmed, then fixed**
+
+Investigated before changing anything. Measured actual rendered heights at
+375×812 on the *pre-fix* code: the "Work History" wrapper section (which
+held all four job entries plus their motion state) was **3369px tall**.
+Because a `whileInView` element only becomes visible once enough of *itself*
+intersects the viewport, its maximum achievable intersection ratio at that
+height was `812 / 3369 = 24.1%` — only ~4 points above the `amount: 0.2`
+threshold the code was using. Every other `motion.section` in the file
+(Education, Certifications, Core Expertise, Regulatory & Technical
+Knowledge, Tools) was *also* independently wrapped in the same
+opacity:0-until-triggered treatment, and — critically — **CSS opacity
+compounds down the DOM tree**: even when an inner `motion.article` (each
+individual job entry) successfully animated to its own `opacity: 1`, it was
+still rendered invisible on screen if its `motion.section` ancestor was
+stuck at `opacity: 0`. A slow, exhaustive scripted scroll (150px steps)
+could accidentally land inside that ~4-point-wide window and trigger it,
+which is why the bug wouldn't necessarily show up in a quick manual check —
+but a real, fast flick-scroll on a phone has a real chance of skipping past
+that narrow band entirely, leaving the whole section (and everything inside
+it) permanently invisible. This matches DESIGN_SYSTEM.md's own diagnosis in
+the Motion section almost exactly.
+
+Fix: removed the `motion`/reveal wrapper from every section-level element
+(`h1` and all six `experience-section`s are now plain, always-visible
+elements — no opacity dependency at all). Scroll-triggered reveal now
+exists in exactly one place: the four `motion.article` job entries, per
+`DESIGN_SYSTEM.md`'s "one deliberate moment... scroll-triggered reveal per
+job entry is the one place sequential animation is justified" (also fixes
+the earlier version's unrelated violation of "not scattered fade-ins on
+every element" — previously the `h1` and every section faded in
+separately). Set `viewport={{ once: true, amount: 0.3 }}` on those four as
+instructed; post-fix, their own max achievable ratios at 375px are 0.647,
+1.0, 0.848, and 1.0 — comfortable margin above 0.3, versus the 0.241-vs-0.2
+near-miss the old section wrapper had.
+
+Also added `<MotionConfig reducedMotion="user">` around the whole app in
+`main.jsx`, so `prefers-reduced-motion: reduce` makes every animated
+element (Home hero, Experience job entries) render immediately in its final
+`animate`/`whileInView` state instead of playing a reduced version of the
+same animation — per the Motion section's requirement, and a second,
+independent safeguard against content ever depending on a transform/opacity
+animation actually completing to become visible.
+
+**Testing:** Verified at 375px and 768px using computed styles/geometry
+(`getBoundingClientRect`, `getComputedStyle`) rather than visual
+screenshots — screenshots have been timing out in this session's Browser
+pane all session. While investigating, traced that specifically to the
+preview tab running with `document.hidden === true` / unfocused; scroll
+tests taken while backgrounded silently never fired any `IntersectionObserver`
+callback at all (0% opacity regardless of scroll), which would have looked
+like a *worse*, unrelated bug if taken at face value. Re-ran after
+`tabs_select` brought the tab to the front (`document.visibilityState`
+back to `"visible"`) and all sections/entries rendered at `opacity: 1` as
+expected at both viewports, with `node.style` showing the correct end
+state. Also spot-checked theme toggle (background/ink swap to the new
+token values) and font loading (`document.fonts.status === "loaded"`,
+Newsreader on headings, Inter on body) — both fine. `npm run lint` passes
+clean.
+
+**Not implemented — out of scope for this pass, flagging so it's not
+forgotten:** DESIGN_SYSTEM.md's "Experience page layout" section also
+specifies a scroll-linked left border per job entry (`--border` default,
+switching to `--accent` for whichever entry is currently in view, "implying
+a timeline"). That wasn't in the six requested action items, so I didn't
+build it — it needs its own scroll-position tracking (not just a one-shot
+`whileInView`) and felt like a distinct follow-up task rather than part of
+"fix the mobile bug." Also didn't touch "reverse-chronological" ordering
+in that same section — the current work-history array is already in that
+order (Micro Data Labs → Meril → MDL Clintech → Senior Research Fellow,
+most recent first), so no change was needed there, but flagging that I
+didn't independently re-verify chronological correctness beyond the order
+already in the data.
+
+Files touched: `DESIGN_SYSTEM.md` (new),
+`souvik-nandi-potfolio/index.html`, `souvik-nandi-potfolio/src/index.css`,
+`souvik-nandi-potfolio/src/main.jsx`,
+`souvik-nandi-potfolio/src/pages/Home.jsx`,
+`souvik-nandi-potfolio/src/pages/Experience.jsx`
+
+Status: done

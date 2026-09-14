@@ -114,23 +114,23 @@ const tools = [
   { label: 'Research & Trial Resources', items: 'PubMed, ClinicalTrials.gov, CTRI' },
 ]
 
-const reveal = {
+const jobReveal = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.2 },
+  viewport: { once: true, amount: 0.3 },
   transition: { duration: 0.5 },
 }
 
 export default function Experience() {
   return (
     <div className="experience-page">
-      <motion.h1 {...reveal}>Experience</motion.h1>
+      <h1>Experience</h1>
 
-      <motion.section {...reveal} className="experience-section">
+      <section className="experience-section">
         <h2>Work History</h2>
         <div className="work-list">
           {workHistory.map((job) => (
-            <motion.article key={job.role + job.org} {...reveal} className="work-item">
+            <motion.article key={job.role + job.org} {...jobReveal} className="work-item">
               <div className="work-item-header">
                 <h3>{job.role}</h3>
                 <span className="work-dates">{job.dates}</span>
@@ -145,9 +145,9 @@ export default function Experience() {
             </motion.article>
           ))}
         </div>
-      </motion.section>
+      </section>
 
-      <motion.section {...reveal} className="experience-section">
+      <section className="experience-section">
         <h2>Education</h2>
         <ul className="education-list">
           {education.map((item) => (
@@ -157,32 +157,32 @@ export default function Experience() {
             </li>
           ))}
         </ul>
-      </motion.section>
+      </section>
 
-      <motion.section {...reveal} className="experience-section">
+      <section className="experience-section">
         <h2>Certifications</h2>
         <ul className="certifications-list">
           {certifications.map((cert) => (
             <li key={cert}>{cert}</li>
           ))}
         </ul>
-      </motion.section>
+      </section>
 
-      <motion.section {...reveal} className="experience-section">
+      <section className="experience-section">
         <h2>Core Expertise</h2>
         <ul className="skills-grid">
           {coreExpertise.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
-      </motion.section>
+      </section>
 
-      <motion.section {...reveal} className="experience-section">
+      <section className="experience-section">
         <h2>Regulatory & Technical Knowledge</h2>
         <p className="tag-list">{regulatoryKnowledge.join(' | ')}</p>
-      </motion.section>
+      </section>
 
-      <motion.section {...reveal} className="experience-section">
+      <section className="experience-section">
         <h2>Tools</h2>
         <ul className="tools-list">
           {tools.map((group) => (
@@ -191,7 +191,7 @@ export default function Experience() {
             </li>
           ))}
         </ul>
-      </motion.section>
+      </section>
     </div>
   )
 }

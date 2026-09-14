@@ -11,26 +11,21 @@ const stats = [
 
 export default function Home() {
   return (
-    <section className="home-hero">
-      <motion.div
-        className="home-content"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+    <motion.section
+      className="home-hero"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="home-photo">
+        <img src={profilePhoto} alt="Dr. Souvik Nandi" />
+      </div>
+
+      <div className="home-content">
         <h1>Dr. Souvik Nandi</h1>
         <p className="home-title">
           Clinical Affairs &amp; Medical Writing Leader | Clinical Research | Medical Devices
         </p>
-
-        <div className="home-stats">
-          {stats.map((stat) => (
-            <div className="stat-badge" key={stat.label}>
-              <span className="stat-number">{stat.number}</span>
-              <span className="stat-label">{stat.label}</span>
-            </div>
-          ))}
-        </div>
 
         <p className="home-summary">
           Clinical affairs and medical writing leader with experience building clinical research
@@ -44,19 +39,19 @@ export default function Home() {
           environments.
         </p>
 
+        <div className="home-stats">
+          {stats.map((stat) => (
+            <div className="stat-badge" key={stat.label}>
+              <span className="stat-number">{stat.number}</span>
+              <span className="stat-label">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+
         <a className="home-cta" href={`mailto:${EMAIL}`}>
           Get in touch &mdash; {EMAIL}
         </a>
-      </motion.div>
-
-      <motion.div
-        className="home-photo"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <img src={profilePhoto} alt="Dr. Souvik Nandi" />
-      </motion.div>
-    </section>
+      </div>
+    </motion.section>
   )
 }
