@@ -435,3 +435,49 @@ the per-entry animation immediately.
 Files touched: `souvik-nandi-potfolio/src/pages/Experience.jsx`
 
 Status: done
+
+---
+
+## [2026-09-15] Restore entrance animation for above-the-fold Experience cards (source: chat)
+
+User noticed a follow-on effect of the previous fix: Home's hero reliably
+"floats up" on load, but the Experience job card(s) already in view at
+mount now sit static with zero motion — a visible mismatch between the two
+pages. Asked before changing anything, since it wasn't obvious whether the
+fix should add motion back to Experience or the static behavior was
+actually fine and just needed explaining; user confirmed they want it
+matched to Home's entrance.
+
+**Why they differed:** Home's hero uses Framer Motion's `animate` prop,
+which is driven by the component mounting — it transitions immediately and
+deterministically, with no dependency on scroll position or any async
+browser API. The previous Experience fix, in guaranteeing already-in-view
+cards could never be invisible, went further than necessary and stripped
+animation entirely (plain `<article>`, no Framer Motion at all) rather than
+swapping to that same reliable `animate` trigger — so the fix was correct
+for the visibility bug but incidentally flattened the motion too.
+
+**Fix:** `JobCard`'s "already in view" branch is now a `motion.article`
+using `initial` + `animate` (mount-driven, same mechanism as Home) instead
+of a plain `<article>`. The "below the fold" branch is unchanged —
+`whileInView` is still correct there, since scroll-triggered reveal is the
+actual desired effect for cards not yet visible. Gave each branch a
+distinct `key` (`"mount"` / `"scroll"`) so switching between them (decided
+in `useLayoutEffect`, before paint) forces a clean remount rather than
+Framer Motion reconciling an in-place prop swap between two different
+trigger modes — a defensive choice to avoid a theoretical race between
+Framer Motion's own mount effect and this component's measurement effect,
+not something observed failing, but cheap to rule out.
+
+**Verified:** dispatched a real click on the Experience nav link and
+sampled `getComputedStyle(item).opacity` every animation frame for ~200ms
+immediately after. Confirmed the curve starts at `0` around 29ms in and
+rises smoothly (0.017 → 0.044 → 0.072 → … → 0.50 by 196ms) — a real,
+playing fade+lift, not just an instant snap to visible. Re-ran the
+scroll-through regression check for the three below-the-fold cards — all
+still correctly start hidden and reach `opacity: 1` after scrolling.
+`npm run lint` clean, no console errors.
+
+Files touched: `souvik-nandi-potfolio/src/pages/Experience.jsx`
+
+Status: done
