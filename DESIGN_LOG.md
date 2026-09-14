@@ -279,3 +279,94 @@ Files touched: `DESIGN_SYSTEM.md` (new),
 `souvik-nandi-potfolio/src/pages/Experience.jsx`
 
 Status: done
+
+---
+
+## [2026-09-15] Rename default branch master → main (source: chat)
+
+Ran exactly:
+```
+git branch -m master main
+git push -u origin main
+```
+Local branch renamed and pushed; `main` now tracks `origin/main` (0
+ahead/behind at push time). Old `master` left untouched on the remote, as
+instructed — not deleted.
+
+Checked github.com/Soham9Nandi/souvik-nandi-portfolio/branches afterward:
+**GitHub still shows `master` as the repo's Default branch.** `main` exists
+as a regular active branch alongside it. As instructed, I did not try to
+change the default via the API/gh CLI — that's a repo-settings change
+(Settings → Branches → Default branch) that needs to happen on
+github.com, or you can tell me to do it if you want it scripted via `gh
+api`/`gh repo edit` instead.
+
+Practical effect until that setting is changed: new clones, PRs, and the
+repo's default view will still land on `master`, even though local `git
+push`/`git pull` without an explicit branch name now goes to `main` (it's
+the current branch and has its upstream set). Worth switching the GitHub
+default sooner rather than later so the two don't drift.
+
+Files touched: none (git/remote config only)
+
+Status: done
+
+---
+
+## [2026-09-15] Fix: Experience page content invisible until manual scroll (source: chat)
+
+Follow-up bug report on the previous Experience-page fix: the first job
+entry ("Head, Clinical Affairs") still wasn't visible immediately after
+navigating to the page — it only appeared after the user manually scrolled,
+even though the earlier fix had confirmed (via computed styles) that all
+entries reach `opacity: 1` given a normal scroll pass.
+
+**Reproduced first, before changing anything.** Simulated the actual
+reported interaction: scroll down on Home (`scrollTo(0, 600)`, standing in
+for wherever a real user's scroll position happens to be), then dispatch a
+real click on the "Experience" nav link (client-side route change, not a
+full navigation), then check the first job card *without* scrolling.
+Result: `scrollY` stayed at `600` after navigating to `/experience`, and
+the first `.work-item` was positioned at `top: -252px` — already scrolled
+above the viewport on mount, with its `whileInView` animation caught
+mid-transition (`opacity: 0.867…`, not yet settled).
+
+**Root cause:** React Router (`BrowserRouter` + `Routes`, no data router,
+no `<ScrollRestoration>`) does not reset scroll position on client-side
+navigation — that's normal browser behavior only for full page loads.
+Whatever `scrollY` the previous page was at carries straight into the next
+route's DOM. Since the first job card usually sits right at the top of the
+Experience page, any nonzero leftover scroll shifts it out of alignment
+with the viewport on mount, which is what delayed/confused its
+`whileInView` trigger. This is a separate, second cause of the same
+"content doesn't show" symptom from the entry above — that earlier fix
+correctly resolved the section-wrapper opacity-compounding bug, but this
+one only shows up on client-side navigation with a nonzero prior scroll
+position, which is exactly how a real visitor clicking through the nav
+behaves (a fresh direct URL load starts at `scrollY: 0` and wouldn't have
+shown it, which is why it wasn't caught in the previous round of testing).
+
+**Fix:** added `souvik-nandi-potfolio/src/components/ScrollToTop.jsx` — a
+`useLocation` + `useEffect(() => window.scrollTo(0, 0), [pathname])`
+component, rendered once inside `<BrowserRouter>` in `App.jsx` alongside
+`<Routes>`. Every route change now resets the viewport to the top before
+the new page's content mounts, matching how a traditional multi-page site
+behaves.
+
+**Verified:** re-ran the exact same reproduction (scroll to 600 on Home,
+dispatch a click on the Experience nav link, check immediately without
+manual scrolling). Post-fix: `scrollY` is `0` after navigation, the first
+job card is at `top: 345px` (cleanly inside the 812px viewport), and its
+opacity reaches `1` within ~500ms of the click with zero manual scrolling.
+`npm run lint` passes clean; no console errors.
+
+**Assumption:** `ScrollToTop` resets scroll on *every* route change,
+including the placeholder pages and back/forward navigation. That matches
+normal site behavior and wasn't flagged as unwanted, but note it now
+governs all routes, not just Experience — say so if you want any route
+(e.g. returning to Home) to preserve scroll position instead.
+
+Files touched: `souvik-nandi-potfolio/src/App.jsx`,
+`souvik-nandi-potfolio/src/components/ScrollToTop.jsx` (new)
+
+Status: done
