@@ -370,3 +370,68 @@ Files touched: `souvik-nandi-potfolio/src/App.jsx`,
 `souvik-nandi-potfolio/src/components/ScrollToTop.jsx` (new)
 
 Status: done
+
+---
+
+## [2026-09-15] Fix: Work History blank on Experience load, corrected diagnosis (source: chat)
+
+The previous entry misdiagnosed the report. User clarified (after I asked
+targeted questions rather than assuming): this reproduces in a **resized
+desktop browser window** standing in for mobile view, the header/nav/title
+render fine but **Work History and everything below it is blank**, and it
+happens on **both** a direct `/experience` URL load/refresh **and**
+clicking the nav link — including a fresh load starting at `scrollY: 0`,
+which the previous fix's leftover-scroll-position theory can't explain.
+
+**Re-investigated with that corrected scope.** Did a genuine hard
+navigation (not a client-side route change) straight to `/experience` at a
+resized viewport and inspected the first job entry immediately. Found it
+was still using `initial={{ opacity: 0 }}` + `whileInView` (from the prior
+mobile-bug fix, which correctly removed the *section*-level wrapper but
+left this per-entry animation in place) — meaning even an entry already
+fully inside the viewport on page load still starts invisible and waits on
+an asynchronous `IntersectionObserver` callback (via Framer Motion's
+`whileInView`) before it's shown. That callback isn't guaranteed to fire
+immediately on mount — the delay is normally small, but real — and a user
+who starts scrolling shortly after the page loads (which is what most
+people do) will reliably perceive "nothing shows until I scroll," because
+scrolling itself is often what nudges the browser into delivering the
+callback. This is the same underlying principle DESIGN_SYSTEM.md's Motion
+section calls out — content depending on an animation trigger to become
+visible — just showing up as a load-time flash rather than the
+compounding-opacity failure the previous entry fixed.
+
+**Fix:** replaced the inline `motion.article` in the Work History map with
+a new `JobCard` component
+(`souvik-nandi-potfolio/src/pages/Experience.jsx`). On mount, a
+`useLayoutEffect` synchronously checks `getBoundingClientRect().top <
+window.innerHeight` **before the browser paints**. If the entry is already
+in view, it renders as a plain `<article>` — no Framer Motion, no `style`
+attribute, no animation dependency, permanently `opacity: 1`. Only entries
+that are genuinely below the fold at mount keep the
+`motion.article`/`whileInView` scroll-reveal. Default state (before the
+layout effect resolves) is "already visible" — the safe direction per
+DESIGN_SYSTEM.md, so even if the check were somehow skipped, content
+degrades to always-visible rather than always-hidden.
+
+**Verified:** hard-loaded `/experience` directly (not a SPA nav) at both
+375×812 and 500×700. In both cases the first job entry has
+`hasAttribute('style') === false` and `opacity: 1` immediately — it's
+structurally incapable of being invisible now, not just fast enough to
+look that way. Confirmed the three below-the-fold entries still correctly
+start at `opacity: 0` and reach `1` after a scroll pass (regression check
+against the intended "scroll-triggered reveal per job entry" motion
+design). Re-tested at 375px too. `npm run lint` clean, no console errors.
+
+**Process note for next time:** the previous entry's fix was real and
+necessary (the section-wrapper compounding-opacity bug was genuinely
+happening), but I filled in the *navigation* half of the reproduction
+(leftover scroll position from clicking the nav) without confirming that
+matched what the user actually meant by "blank until I scroll" — it
+didn't. Asked clarifying questions this round before touching any code,
+which surfaced that it happens on a direct reload too and narrowed it to
+the per-entry animation immediately.
+
+Files touched: `souvik-nandi-potfolio/src/pages/Experience.jsx`
+
+Status: done
