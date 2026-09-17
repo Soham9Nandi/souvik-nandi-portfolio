@@ -144,3 +144,26 @@ Reverse-chronological stacked entries (most recent first — standard resume
 convention), each with a thin left border in `--border` that becomes
 `--accent` on the entry currently in view while scrolling, implying a
 timeline without literal numbered markers or icons.
+
+## Publications page layout
+
+Ordered by impact factor, highest first — per the site owner's explicit
+directive, overriding an earlier chat recommendation of reverse-chronological.
+
+- **In review** (submitted, not yet accepted/peer-reviewed): its own small
+  section at the top, clearly labeled "In review" — never listed identically
+  to a published work. Currently one entry.
+- **Ranked list:** all entries with a stated impact factor, sorted highest
+  to lowest.
+- **Additional publications:** entries with no impact factor given in the
+  source data — cannot be ranked by a number they don't have, so they get
+  their own trailing group (sorted by year, descending, within it) rather
+  than being placed arbitrarily within the ranked list.
+- **Card, condensed by default:** title (serif, matches heading style),
+  journal + year (muted caption), first-author badge and impact-factor badge
+  inline where applicable. Expands (real `<button>`, `aria-expanded`, not a
+  bare div) to reveal the full author list and a link to the source when one
+  exists in the data.
+- **Motion:** reuse the Experience page's already-tested reveal pattern
+  (the `JobCard` already-in-view check) as a shared component rather than
+  reimplementing scroll-reveal logic for 25 more entries from scratch.

@@ -2,11 +2,11 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useTheme } from '../context/useTheme'
 
 const navItems = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/experience', label: 'Experience' },
-  { to: '/publications', label: 'Publications' },
-  { to: '/patents', label: 'Patents' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/', label: 'Home', end: true, ready: true },
+  { to: '/experience', label: 'Experience', ready: true },
+  { to: '/publications', label: 'Publications', ready: true },
+  { to: '/patents', label: 'Patents', ready: false },
+  { to: '/contact', label: 'Contact', ready: false },
 ]
 
 export default function Layout() {

@@ -481,3 +481,107 @@ still correctly start hidden and reach `opacity: 1` after scrolling.
 Files touched: `souvik-nandi-potfolio/src/pages/Experience.jsx`
 
 Status: done
+
+---
+
+## [2026-09-17] Publications page — full spec (source: chat)
+
+Sort order changed from an earlier chat recommendation (reverse-chronological)
+to impact-factor descending, per a direct requirement from the site owner.
+All other prior recommendations stand: condensed cards with expand for full
+citation, both first-author and impact-factor badges shown per entry,
+in-review entries labeled distinctly, shared reveal-animation component
+reused from Experience. Full spec now in DESIGN_SYSTEM.md under
+"Publications page layout." Data provided in full in this same session —
+see src/data/publications.js.
+
+Status: requested
+
+---
+
+## [2026-09-17] Publications page — implementation (source: claude code)
+
+Built the Publications page per the spec above.
+
+**Data gap, resolved before writing any code:** the request said publication
+data was "provided in full in this same session," but the actual message
+contained only a placeholder (`[paste the full publications.js content from
+above, all 287 lines]`) — no data was actually present. Rather than
+fabricate 25 academic publication entries for a real person, stopped and
+asked. Given the option to extract from the existing `Publications.docx` at
+the project root instead of waiting on a re-paste, and did that.
+
+**Extraction:** `Publications.docx` has no tables — 25 citations as plain
+paragraphs in mixed citation styles (author order/abbreviation varies by
+journal). Parsed each entry by hand rather than with a generic regex, since
+formats aren't consistent enough for that to be reliable (e.g. embedded
+`<w:tab/>` runs mid-citation in one entry leaked raw XML into a naive
+paragraph-text extraction). Cross-checked the result against the CV's
+stated stats as a sanity check: got exactly 25 entries and exactly 5 with
+"Souvik Nandi" as the literal first author, matching the CV's "25
+publications, ~5 as first author" claim — good signal the parsing was
+right. Also found exactly one entry with a "Communicated" status (distinct
+from "Just Accepted," which appears on several already-peer-reviewed
+entries and was treated as published) — matching the design system's
+"currently one entry" for the in-review section. Preserved author-list
+strings and journal names exactly as written in the source rather than
+normalizing or expanding abbreviations — caught myself about to expand
+"Rev Chim" to "Revista de Chimie" from my own general knowledge and
+reverted it, since that's not what the source document says. Dropped
+volume/issue/page numbers as a scoping choice (not requested, and not
+something a recruiter skimming needs); kept title, authors, journal, year,
+impact factor, first-author flag, and link only.
+
+**`RevealCard` extraction:** pulled the mount-vs-scroll visibility logic out
+of Experience's `JobCard` into `src/components/RevealCard.jsx` unchanged in
+behavior — same `useLayoutEffect` pre-paint viewport check, same
+mount/animate vs. scroll/whileInView split, same `"mount"`/`"scroll"` key
+strategy. Added an `as` prop (defaults to `article`) so Publications can use
+it on `<li>` elements. `Experience.jsx`'s `JobCard` component is gone;
+`Experience` now renders `<RevealCard className="work-item">` directly.
+
+**Publications.jsx:** three sections — "In review" (the one Communicated
+entry), "Peer-Reviewed Publications" (21 entries with an impact factor,
+sorted descending), "Additional Publications" (3 entries with no impact
+factor, sorted by year descending). Each card is a `RevealCard` wrapping a
+real `<button aria-expanded>` (condensed: title, journal · year, first-author
+/ impact-factor badges) that expands to show the full author string and a
+"View source" link when the data has one.
+
+**Assumptions made, not specified in the request:**
+- Section heading text: the spec quoted "In review" verbatim, which I used
+  as-is; "Peer-Reviewed Publications" and "Additional Publications" (for the
+  ranked and no-IF groups respectively) are my own wording — spec named the
+  groups conceptually but didn't give exact heading copy.
+- Reused `.experience-section` for spacing on Publications' three sections
+  rather than introducing a page-specific class, since it's purely a
+  margin-bottom utility — no visual coupling to Experience implied.
+- The request said to "update its `ready` flag to `true` in the nav tabs
+  data," but no such flag existed in `Layout.jsx`'s `navItems` before this
+  — nothing currently branches on it (per CLAUDE.md, placeholder tabs are
+  already shown identically to built ones, not disabled or badged). Added
+  `ready: true/false` per item now so the data honestly reflects build
+  state and is available if a future pass wants to visually distinguish
+  them; it has no effect on rendering today.
+- Toggle affordance is text-only ("Show details" / "Hide details"), not an
+  icon/chevron, per CLAUDE.md's "iconography: minimal to none."
+
+**Verified:** loaded `/publications` at 375px and 768px. Confirmed sort
+order (impact factor descending in the ranked group, year descending in
+"Additional"), exactly 5 first-author badges, all 25 cards present. Tested
+expand/collapse via a real `.click()` — `aria-expanded` flips, full author
+list and link appear/disappear correctly, `rel="noreferrer"` on the
+external link. First card animates in on mount (not scroll-gated, matching
+the RevealCard contract); scroll-through confirmed all 25 reach
+`opacity: 1`. Confirmed `/patents` and `/contact` still correctly show the
+placeholder (no regression from the router change). `npm run lint` clean,
+no console errors.
+
+Files touched: `souvik-nandi-potfolio/src/data/publications.js` (new),
+`souvik-nandi-potfolio/src/components/RevealCard.jsx` (new),
+`souvik-nandi-potfolio/src/pages/Publications.jsx` (new),
+`souvik-nandi-potfolio/src/pages/Experience.jsx`,
+`souvik-nandi-potfolio/src/App.jsx`, `souvik-nandi-potfolio/src/components/Layout.jsx`,
+`souvik-nandi-potfolio/src/index.css`
+
+Status: done

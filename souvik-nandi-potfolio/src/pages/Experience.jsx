@@ -1,5 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import RevealCard from '../components/RevealCard'
 
 const workHistory = [
   {
@@ -115,78 +114,6 @@ const tools = [
   { label: 'Research & Trial Resources', items: 'PubMed, ClinicalTrials.gov, CTRI' },
 ]
 
-function JobCard({ job }) {
-  const ref = useRef(null)
-  // Default to "already visible" — the safe state per DESIGN_SYSTEM.md's
-  // "content must never depend on the animation firing to become visible"
-  // rule. useLayoutEffect runs synchronously before the browser paints, so
-  // if this entry is actually below the fold we switch it to the
-  // scroll-reveal version before the user ever sees a frame.
-  //
-  // Both branches still animate — the difference is *what* triggers the
-  // entrance. In-view entries use `animate`, which fires on mount and
-  // doesn't depend on any async browser API, so it's exactly as reliable
-  // as the Home hero's entrance (no IntersectionObserver-timing risk).
-  // Below-the-fold entries use `whileInView`, since for those the animation
-  // firing exactly when scrolled into view is the actual desired effect.
-  // Distinct `key`s force a clean remount when the branch changes (before
-  // paint, so it's invisible to the user) rather than Framer Motion having
-  // to reconcile an in-place prop swap between two different trigger modes.
-  const [animateOnScroll, setAnimateOnScroll] = useState(false)
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const alreadyInView = el.getBoundingClientRect().top < window.innerHeight
-    if (!alreadyInView) setAnimateOnScroll(true)
-  }, [])
-
-  const content = (
-    <>
-      <div className="work-item-header">
-        <h3>{job.role}</h3>
-        <span className="work-dates">{job.dates}</span>
-      </div>
-      <p className="work-org">{job.org}</p>
-      <p className="work-location">{job.location}</p>
-      <ul>
-        {job.bullets.map((bullet, i) => (
-          <li key={i}>{bullet}</li>
-        ))}
-      </ul>
-    </>
-  )
-
-  if (animateOnScroll) {
-    return (
-      <motion.article
-        key="scroll"
-        ref={ref}
-        className="work-item"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.5 }}
-      >
-        {content}
-      </motion.article>
-    )
-  }
-
-  return (
-    <motion.article
-      key="mount"
-      ref={ref}
-      className="work-item"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {content}
-    </motion.article>
-  )
-}
-
 export default function Experience() {
   return (
     <div className="experience-page">
@@ -196,7 +123,19 @@ export default function Experience() {
         <h2>Work History</h2>
         <div className="work-list">
           {workHistory.map((job) => (
-            <JobCard key={job.role + job.org} job={job} />
+            <RevealCard key={job.role + job.org} className="work-item">
+              <div className="work-item-header">
+                <h3>{job.role}</h3>
+                <span className="work-dates">{job.dates}</span>
+              </div>
+              <p className="work-org">{job.org}</p>
+              <p className="work-location">{job.location}</p>
+              <ul>
+                {job.bullets.map((bullet, i) => (
+                  <li key={i}>{bullet}</li>
+                ))}
+              </ul>
+            </RevealCard>
           ))}
         </div>
       </section>

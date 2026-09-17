@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Experience from './pages/Experience'
+import Publications from './pages/Publications'
 import Placeholder from './pages/Placeholder'
 import ScrollToTop from './components/ScrollToTop'
 
@@ -13,7 +14,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/experience" element={<Experience />} />
-          <Route path="/publications" element={<Placeholder title="Publications" />} />
+          <Route path="/publications" element={<Publications />} />
           <Route path="/patents" element={<Placeholder title="Patents & Research" />} />
           <Route path="/contact" element={<Placeholder title="Contact" />} />
         </Route>
