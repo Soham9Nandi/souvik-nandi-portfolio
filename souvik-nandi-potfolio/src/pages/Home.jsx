@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import profilePhoto from '../assets/profile.jpeg'
 
 const EMAIL = 'ph.souvikn@gmail.com'
@@ -11,12 +10,7 @@ const stats = [
 
 export default function Home() {
   return (
-    <motion.section
-      className="home-hero"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <section className="home-hero">
       <div className="home-photo">
         <img src={profilePhoto} alt="Dr. Souvik Nandi" />
       </div>
@@ -52,6 +46,6 @@ export default function Home() {
           Get in touch &mdash; {EMAIL}
         </a>
       </div>
-    </motion.section>
+    </section>
   )
 }
