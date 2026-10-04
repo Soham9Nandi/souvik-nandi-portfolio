@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import Header from './Header'
 
 const navItems = [
   { to: '/', label: 'Home', end: true },
@@ -11,23 +12,20 @@ const navItems = [
 export default function Layout() {
   return (
     <div className="site">
-      <header className="site-header">
-        <NavLink to="/" className="site-name" end>
-          Souvik Nandi
-        </NavLink>
-        <nav className="site-nav">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </header>
+      <Header />
+
+      <nav className="site-nav">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
 
       <main className="site-main">
         <Outlet />
