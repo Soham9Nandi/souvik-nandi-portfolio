@@ -277,6 +277,16 @@ p {
 }
 
 @media (min-width: 768px) {
+  /* min-height on .app-shell only sets a floor, so with content taller
+     than the viewport the whole page would grow past it and the header
+     would scroll away with everything else. Desktop has no "let the
+     shell grow" exception like mobile's very-short-viewport case, so this
+     needs to be a hard cap: nav-stage and the sheet below it must be
+     forced to actually shrink-and-scroll instead. */
+  .app-shell {
+    height: 100dvh;
+  }
+
   .nav-stage {
     display: flex;
     flex-direction: column;
@@ -325,7 +335,7 @@ p {
     right: auto;
     top: auto;
     bottom: auto;
-    flex: 1 1 auto;
+    flex: 1 1 0%;
     min-height: 0;
     margin: 0 2rem 2rem;
     padding: 56px;
