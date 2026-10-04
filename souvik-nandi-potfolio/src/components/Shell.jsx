@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { useLocation, useOutlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Header from './Header'
 import NavTabs from './NavTabs'
@@ -30,6 +30,17 @@ export default function Shell() {
   }
   const sheetContextValue = useMemo(() => ({ ref: sheetRef, element: sheetEl }), [sheetEl])
   const { pathname } = useLocation()
+  // Captured as a value, not rendered as a live <Outlet/>. Outlet is a
+  // mounted component that subscribes to router context directly, so if
+  // it were nested inside the exiting motion.div, it would swap to the
+  // *new* page's content the instant pathname changes — regardless of
+  // whether that wrapper is still mid-exit-animation. That produced a real
+  // bug: the outgoing page's exit fade visibly showed the incoming page's
+  // content, then the real entering instance faded in on top of it,
+  // reading as "appears, fades out, fades back in". Capturing the matched
+  // element as a plain value freezes it for the lifetime of this specific
+  // render — the preserved/exiting tree keeps showing the old page.
+  const outlet = useOutlet()
   const activeIndex = pages.findIndex((page) => page.path === pathname)
   const afterCount = pages.length - 1 - activeIndex
 
@@ -95,7 +106,7 @@ export default function Shell() {
                   transition={{ duration: 0.35 }}
                   onAnimationComplete={handleAnimationComplete}
                 >
-                  <Outlet />
+                  {outlet}
                 </motion.div>
               </AnimatePresence>
             </SheetContext.Provider>
