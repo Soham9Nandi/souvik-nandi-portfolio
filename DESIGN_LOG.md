@@ -732,3 +732,49 @@ but worth recording since they weren't visible from code review alone):**
   preemptively (see above).
 
 Status: done
+
+---
+
+## [2026-09-17] Fix: janky page transition, content appears/fades/returns (source: chat)
+
+Reported on `feat/tabbed-nav`: "the motion when I change the tab is janky,
+it's like it is appearing but then it fades out and comes back again."
+
+**Diagnosed by sampling, not guessing.** Clicked a tab and recorded the
+page-transition wrapper's `getComputedStyle(...).opacity` every animation
+frame, tagging each sample with which page's markup it actually contained
+(`.home-hero` vs `.work-item` etc.). That showed the outgoing wrapper's
+"exit" phase (opacity declining 1→0 over ~350ms) was displaying the
+*incoming* page's content the entire time — not the outgoing page's. First
+suspected React StrictMode (a known class of issue with double-invoked
+effects colliding with animation libraries); disabled it and re-ran the
+same trace — identical result, ruling that out.
+
+**Root cause:** `Shell.jsx` rendered a live `<Outlet/>` inside the
+AnimatePresence-tracked `motion.div`. `Outlet` is a mounted React component
+that subscribes to router context directly — so the instant `pathname`
+changes, *that specific Outlet instance* re-renders and swaps to the new
+route's output immediately, regardless of whether its parent wrapper is
+still mid-exit-animation under `mode="wait"`. AnimatePresence keeps the
+old wrapper around to finish its exit, but the Outlet inside it doesn't
+care — it already moved on. Net effect on every nav: old wrapper's exit
+fade (1→0) plays while already showing the new page's text, then the
+genuinely new wrapper's entrance (0→1) plays on top of that — reading
+exactly as "appears, fades out, comes back".
+
+**Fix:** capture `useOutlet()` as a plain value (`const outlet =
+useOutlet()`) and render `{outlet}` instead of `<Outlet/>`. The captured
+React element is just a value — it doesn't itself subscribe to anything —
+so the preserved/exiting wrapper keeps showing whatever page it actually
+belongs to for the whole of its own animation.
+
+**Verified:** resampled the identical opacity-over-time trace for
+Home→Experience and Experience→Publications — outgoing page now stays
+correctly tagged as itself through its full 1→0 exit, incoming page fades
+0→1 once with no dip, and the first `RevealCard` entry climbs 0→1 cleanly
+only once its real page has mounted. No console errors; `npm run lint` and
+`npm run build` both clean.
+
+Files touched: `souvik-nandi-potfolio/src/components/Shell.jsx`
+
+Status: done
