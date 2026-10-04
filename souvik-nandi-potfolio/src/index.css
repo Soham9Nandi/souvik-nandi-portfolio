@@ -26,38 +26,6 @@
   font: 1rem/1.6 var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1b1712;
-    --surface: #2a251d;
-    --ink: #f3eee1;
-    --ink-muted: #a99c82;
-    --accent: #7fbba6;
-    --border: #423a2f;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme='light'] {
-  --bg: #f5f0e6;
-  --surface: #ece4d3;
-  --ink: #241f17;
-  --ink-muted: #6b5d45;
-  --accent: #2f5d50;
-  --border: #d8cdb6;
-  color-scheme: light;
-}
-
-:root[data-theme='dark'] {
-  --bg: #1b1712;
-  --surface: #2a251d;
-  --ink: #f3eee1;
-  --ink-muted: #a99c82;
-  --accent: #7fbba6;
-  --border: #423a2f;
-  color-scheme: dark;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -168,17 +136,6 @@ p {
 .nav-link.active,
 .nav-link:hover {
   color: var(--ink);
-}
-
-.theme-toggle {
-  font: inherit;
-  font-size: 0.9rem;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px 12px;
-  cursor: pointer;
 }
 
 .site-main {

@@ -1,17 +1,14 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { useTheme } from '../context/useTheme'
 
 const navItems = [
-  { to: '/', label: 'Home', end: true, ready: true },
-  { to: '/experience', label: 'Experience', ready: true },
-  { to: '/publications', label: 'Publications', ready: true },
-  { to: '/patents', label: 'Patents', ready: false },
-  { to: '/contact', label: 'Contact', ready: false },
+  { to: '/', label: 'Home', end: true },
+  { to: '/experience', label: 'Experience' },
+  { to: '/publications', label: 'Publications' },
+  { to: '/patents', label: 'Patents' },
+  { to: '/contact', label: 'Contact' },
 ]
 
 export default function Layout() {
-  const { theme, toggleTheme } = useTheme()
-
   return (
     <div className="site">
       <header className="site-header">
@@ -30,14 +27,6 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? 'Dark' : 'Light'} mode
-        </button>
       </header>
 
       <main className="site-main">
