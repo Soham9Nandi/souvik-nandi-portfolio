@@ -598,3 +598,137 @@ Status: done
 - Favicon deferred. Publications card redesign is being done separately by me and is out of scope.
 
 Status: requested
+
+---
+
+## [2026-09-17] Tabbed navigation, header, light-only — implementation (source: claude code)
+
+Built on `feat/tabbed-nav`, seven commits, one per ordered work item plus
+two bug fixes found during verification. Branch not merged to `main`.
+
+**Files touched (cumulative):**
+- Deleted: `src/context/ThemeContext.jsx`, `theme-context.js`, `useTheme.js`,
+  `src/components/ScrollToTop.jsx`, `src/components/Layout.jsx`
+- New: `src/components/Header.jsx`, `Shell.jsx`, `NavTabs.jsx`,
+  `src/context/sheet-context.js`, `useSheetRef.js`, `src/nav-pages.js`,
+  `souvik-nandi-potfolio/vercel.json`
+- Modified: `main.jsx`, `App.jsx`, `index.html`, `index.css` (extensively —
+  dark-mode removal, Header, app-shell/nav-stage/nav-tab/sheet rules),
+  `src/components/RevealCard.jsx`, `src/pages/Home.jsx`
+- Added asset: `src/assets/sn-icon.jpeg` (owner-supplied logo)
+
+**Decisions the spec didn't cover:**
+- **Header name/icon gap at desktop:** spec gives 12px only for mobile.
+  Reused the same 12px at desktop rather than inventing a second value.
+- **AnimatePresence mode:** used `mode="wait"` (exit fully completes before
+  the incoming page mounts) rather than `"sync"` (both animate at once).
+  The spec describes outgoing/incoming motion sequentially and the sheet
+  has no spare room to host two overlapping page subtrees cleanly, so
+  simultaneous mode risked layout overlap during the transition.
+- **z-index scheme:** stacked tabs get `slot + 1` (so depth-from-active,
+  not DOM order, decides paint order, per the spec's own requirement); the
+  active tab gets `100` inline, which also covers the desktop case even
+  though a separate desktop rule was first written for it and then removed
+  as dead code (inline style always wins over a stylesheet rule here).
+- **`--sheet-bottom-extent` as a JS-built calc() string:** CSS `calc()` has
+  no conditional, and the sheet's bottom sits flush against `--safe-bottom`
+  when there's no after-stack (Contact active) but needs the extra
+  after-stack-height + gap term otherwise. Shell.jsx picks which *shape* of
+  expression to use based on `afterCount`, but every literal pixel value in
+  that expression is still a `var()` reference into the CSS custom
+  properties — none are hard-coded, matching the spec's actual intent.
+- **`h1:focus` instead of `h1:focus-visible`:** tabindex="-1" elements get
+  no default focus ring, and in testing `:focus-visible` didn't match a
+  script-triggered `.focus()` call. Plain `:focus` is safe here specifically
+  because this heading is never a mouse click target, so there's no
+  click-vs-keyboard distinction to preserve.
+- **Mobile sheet background/border:** the spec gives exact values for the
+  desktop sheet (1px border, specific radius) but not the mobile one beyond
+  position. Gave it `background: var(--bg)`, a 1px border, and a modest
+  bottom-only radius, reusing the desktop token values rather than
+  inventing new ones.
+
+**Didn't match the spec, flagging rather than silently deviating:**
+- **Desktop tab-row/sheet alignment vs. the header.** The header's content
+  is centered in a 1040px column; the nav-stage tab row and sheet instead
+  sit a flat 2rem from the viewport edge (per "aligned with the sheet's
+  left edge" — which they are, verified at 32px/32px). At 1280px this is a
+  real, visible ~80px misalignment between the header's logo column and
+  the tab row beneath it. The spec never says the two should share an outer
+  alignment, so I implemented literally rather than add an unrequested
+  max-width cap — but it's worth a second look.
+- **Keyboard arrow-key sheet scrolling** — structurally correct (`.sheet`
+  is `tabindex="0"`, genuinely overflow-scrollable, confirmed via mouse
+  wheel and direct `scrollTop` writes, and a captured `keydown` listener
+  shows `ArrowDown` reaching it with `defaultPrevented: false`) but the
+  browser's *native* scroll-on-arrow-key action never fired in this test
+  harness specifically — the same category of synthetic-input limitation
+  hit earlier this session with `.click()` vs `dispatchEvent(MouseEvent)`.
+  This should work in any real browser with a real keyboard; I can't make
+  this harness prove it.
+- **`prefers-reduced-motion` has no emulation control in the tools
+  available here** (only light/dark `colorScheme` on `resize_window`), so
+  the "swaps are instant" check is verified by code inspection
+  (app-wide `MotionConfig reducedMotion="user"`, unchanged from Sprint 1,
+  plus the dedicated `@media (prefers-reduced-motion: reduce)` rule
+  disabling the mobile tab-glide transition) rather than live-triggered.
+- **Vercel preview** wasn't reachable from this environment at all (no
+  dashboard/CLI access), so the described 404 condition couldn't actually
+  be observed. Added `vercel.json`'s rewrite preemptively since it's a
+  standard, well-known requirement for any client-side-routed SPA on
+  static hosting, not a fabricated fix for a confirmed failure.
+
+**Two real bugs found and fixed during verification (not spec deviations,
+but worth recording since they weren't visible from code review alone):**
+1. **RevealCard mount-race.** On a *direct* URL load, Shell and the routed
+   page's content mount in the same pass, and `RevealCard`'s mount-time
+   "already visible?" check was reading `sheetRef.current` before Shell's
+   plain `useRef` had actually attached the DOM node — silently null,
+   which made every entry fall back to "already visible" regardless of
+   real position (caught because item 2+ on Experience showed
+   `opacity: 1` immediately on a hard `/experience` load, but correctly
+   `opacity: 0` via client-side nav, where Shell was already mounted).
+   Fixed by routing the sheet node through `useState` so consumers'
+   effects are guaranteed to re-run once it's actually attached.
+2. **Desktop sheet not constraining to the viewport.** `.app-shell` used
+   `min-height: 100dvh` — a floor, not a ceiling — so on any desktop-width
+   page with real content, the flex column just grew past the viewport and
+   the *whole page* (header included) scrolled as one block, instead of
+   only the sheet scrolling internally. Caught at the required 844×390
+   check (`shellHeight` was 958–5500px against a 390px viewport). Fixed
+   with a hard `height: 100dvh` in the desktop media query.
+
+**Verification results:**
+- **Mobile stacking math** (375×667, 390×844, 430×932; all 5 routes,
+  all 5 active indices): before-stack count == index, after-stack count ==
+  4 − index, in every case, at every viewport. 24px reveal, the active
+  tab's 2px sheet overlap, and the 20px sheet-to-after-stack gap all
+  measured exact at every combination. Contact active (no after-stack):
+  sheet bottom sits exactly `--safe-bottom` (24px) from the viewport edge.
+- **Desktop** (768×1024, 1280×800): all 5 tabs always rendered and
+  clickable, active tab's 2px seam-covering overlap confirmed, tab row and
+  sheet share a left edge (32px/32px) — see the header-alignment note above
+  for the one thing that doesn't also align.
+- **Short landscape (844×390):** after the app-shell fix, shell/body height
+  matches the viewport exactly (390px) on all 5 routes, sheet shrinks and
+  scrolls internally, header stays at `top: 0` while `sheet.scrollTop`
+  changes and `window.scrollY` stays 0.
+- **Route consistency:** direct load, hard reload, and browser back/forward
+  on `/publications` → `/patents` → back → forward all produced the same
+  before/after stack counts as clicking there normally.
+- **Experience first load:** at exactly 375×667, the first job entry is
+  `opacity: 1` with no scroll; a scripted scroll-through still brings all 4
+  (Experience) and 25 (Publications) entries to `opacity: 1`.
+- **Keyboard:** Tab order is Home → Experience → Publications → Patents →
+  Contact with a visible focus ring at each stop; Enter on a focused tab
+  navigates and moves focus to the new page's `<h1>` (also with a visible
+  ring). Sheet scroll-by-keyboard: see the flagged tooling limitation above.
+- **Reduced motion:** verified by code inspection only, not live-triggered
+  (no emulation control available) — see above.
+- **No console errors** across a full cycle through all 5 routes. `npm run
+  lint` and `npm run build` both pass clean after every one of the 7
+  commits, not just the last one.
+- **Vercel:** not reachable from this environment; `vercel.json` added
+  preemptively (see above).
+
+Status: done
