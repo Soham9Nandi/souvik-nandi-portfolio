@@ -85,7 +85,6 @@ p {
   margin: 0;
 }
 
-.caption,
 .stat-label,
 .work-dates,
 .work-location,
@@ -314,7 +313,10 @@ p {
     padding: 16px 32px 18px;
     font-size: 1rem;
     margin-bottom: -2px;
-    z-index: 10;
+    /* z-index comes from NavTabs.jsx's inline style (100 for the active
+       tab) — inline style always wins over a stylesheet rule here, so a
+       class-based z-index would be dead weight. The inline value already
+       satisfies this breakpoint too (100 > the sheet's z-index: 5). */
   }
 
   .sheet {
