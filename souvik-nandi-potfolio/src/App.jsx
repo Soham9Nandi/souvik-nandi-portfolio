@@ -1,25 +1,21 @@
 import { Route, Routes } from 'react-router-dom'
-import Layout from './components/Layout'
+import Shell from './components/Shell'
 import Home from './pages/Home'
 import Experience from './pages/Experience'
 import Publications from './pages/Publications'
 import Placeholder from './pages/Placeholder'
-import ScrollToTop from './components/ScrollToTop'
 
 function App() {
   return (
-    <>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/experience" element={<Experience />} />
-          <Route path="/publications" element={<Publications />} />
-          <Route path="/patents" element={<Placeholder title="Patents & Research" />} />
-          <Route path="/contact" element={<Placeholder title="Contact" />} />
-        </Route>
-      </Routes>
-    </>
+    <Routes>
+      <Route element={<Shell />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/experience" element={<Experience />} />
+        <Route path="/publications" element={<Publications />} />
+        <Route path="/patents" element={<Placeholder title="Patents & Research" />} />
+        <Route path="/contact" element={<Placeholder title="Contact" />} />
+      </Route>
+    </Routes>
   )
 }
 
