@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Header from './Header'
@@ -14,6 +14,21 @@ const pageVariants = {
 
 export default function Shell() {
   const sheetRef = useRef(null)
+  // On a fresh full-app mount (direct URL load), Shell and the routed page
+  // mount in the same pass, and RevealCard's own mount-time measurement
+  // effect (deep inside Outlet) was found to sometimes run before this
+  // ref's DOM node is attached — silently leaving every entry on the
+  // "already visible" fallback, including ones well below the fold.
+  // Routing the node through state (via a callback ref) means a change
+  // here triggers a re-render that flows through context, so consumers'
+  // effects keyed on it are guaranteed to re-run once it's actually
+  // attached, instead of racing a plain ref read.
+  const [sheetEl, setSheetEl] = useState(null)
+  const setSheetNode = (node) => {
+    sheetRef.current = node
+    setSheetEl(node)
+  }
+  const sheetContextValue = useMemo(() => ({ ref: sheetRef, element: sheetEl }), [sheetEl])
   const { pathname } = useLocation()
   const activeIndex = pages.findIndex((page) => page.path === pathname)
   const afterCount = pages.length - 1 - activeIndex
@@ -67,9 +82,9 @@ export default function Shell() {
       >
         <NavTabs />
 
-        <main className="sheet" ref={sheetRef} tabIndex={0} aria-label="Page content">
+        <main className="sheet" ref={setSheetNode} tabIndex={0} aria-label="Page content">
           <div className="sheet-inner">
-            <SheetContext.Provider value={sheetRef}>
+            <SheetContext.Provider value={sheetContextValue}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={pathname}
