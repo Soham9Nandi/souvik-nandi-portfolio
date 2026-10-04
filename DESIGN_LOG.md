@@ -585,3 +585,16 @@ Files touched: `souvik-nandi-potfolio/src/data/publications.js` (new),
 `souvik-nandi-potfolio/src/index.css`
 
 Status: done
+
+---
+
+## [2026-09-17] Navigation, header and light-only decisions (source: chat)
+
+- Dark mode is removed. The site is light-only (owner: the logo does not adapt).
+- The owner's logo is used as supplied, on a white rounded square, before the name in a bigger header.
+- Desktop navigation: owner chose the horizontal tab row (Alt B).
+- Mobile navigation: fixed page sequence, two stacks derived from the active page only. Every active page has a tab joined to its sheet. Tap only, no drag.
+- Transition: content fades and lifts; tabs glide on mobile; reduced motion respected.
+- Favicon deferred. Publications card redesign is being done separately by me and is out of scope.
+
+Status: requested

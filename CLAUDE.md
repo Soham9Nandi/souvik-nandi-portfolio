@@ -31,17 +31,16 @@
 - **React + Vite**, client-side rendered.
 - **React Router** for real, separate page routes (e.g. `/experience`, `/publications`) rather than single-page anchor scrolling.
 - **Framer Motion** for scroll-triggered reveal animations.
-- **Dark/light mode:** auto-detects the visitor's system preference on load; a manual toggle lets the visitor override it, and that choice should persist (e.g. via `localStorage`).
+- **Light mode only** — owner decision: the owner's logo does not adapt to a dark background, so there's no theme toggle, system-preference detection, or persisted theme choice.
 
 **Known trade-off (backlog, not blocking):** a client-side SPA means search engines and link-preview crawlers (Google, LinkedIn) won't easily read per-page content, since it all renders after JavaScript loads. Given the recruiter-focused audience, this may matter later. Mitigation options for a future sprint: `react-helmet-async` for per-route meta tags, or prerendering specific routes. Not solving this now — flagging it so it doesn't get forgotten.
 
 ## 3. Visual direction — modern editorial
 
-- **Palette:** cream/off-white background with deep ink text in light mode. A dark-mode equivalent (deep ink background, warm off-white text) is needed but **exact hex values are not yet finalized** — next design round.
+- **Palette:** cream/off-white "manuscript paper" background with deep ink text, light mode only. Exact tokens are finalized in DESIGN_SYSTEM.md.
 - **Typography:** serif headline paired with a clean sans-serif body — signals the academic/published-author credibility (PhD, 25 publications) without looking like a generic template.
 - **Iconography:** minimal to none. No literal pharma imagery (molecules, DNA helixes, medical crosses). The "pharmaceutical touch" comes through restraint and precision, not decoration.
 - **Accent color:** a muted, sophisticated tone (e.g. deep burgundy or forest green family) — **exact color not yet chosen**, next design round.
-- Must be fully legible and intentional in both light and dark mode, not just an inverted light theme.
 
 ## 4. Site architecture — Sprint 1
 
