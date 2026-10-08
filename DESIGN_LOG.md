@@ -973,3 +973,38 @@ Files touched: `souvik-nandi-potfolio/src/pages/Publications.jsx`,
 `souvik-nandi-potfolio/src/index.css`
 
 Status: done
+
+---
+
+## [2026-10-09] Favicon set to the header logo (source: chat)
+
+Favicon was explicitly deferred in DESIGN_SYSTEM.md's Header section
+("unchanged for now"); asked to use the same icon as the header.
+
+- Generated `favicon-32.png` and `favicon-64.png` from the source
+  `src/assets/sn-icon.jpeg` (1254×1254, resized with Lanczos resampling) —
+  two sizes so the browser can pick the sharper one for hi-DPI tabs rather
+  than scaling a single image. Removed the old placeholder `favicon.svg`
+  (Vite's default template icon, never the real logo).
+- `index.html`: replaced the single `favicon.svg` link with the two PNG
+  links (`sizes="32x32"` / `"64x64"`).
+- Deliberately did *not* also add an `apple-touch-icon` (home-screen icon)
+  — generated one while at it, then removed it, since the request was
+  specifically "the one that shows up on the tab," not home-screen
+  icons. Easy to add if wanted.
+- Left the image itself as the plain square JPEG crop — no rounded-corner/
+  border treatment like the header chip has, since that styling lives in
+  the header's CSS, not the source image, and browsers already clip tab
+  favicons into their own shape.
+
+**Verified:** both PNGs fetch with `200` from the dev server and are
+present in `dist/` after `npm run build`; the two `<link rel="icon">` tags
+resolve to them with correct `sizes`/`type`. No console errors; `npm run
+lint` and `npm run build` both clean.
+
+Files touched: `souvik-nandi-potfolio/index.html`,
+`souvik-nandi-potfolio/public/favicon-32.png` (new),
+`souvik-nandi-potfolio/public/favicon-64.png` (new),
+`souvik-nandi-potfolio/public/favicon.svg` (deleted)
+
+Status: done
