@@ -927,3 +927,49 @@ mattered for this test.) `npm run lint` and `npm run build` both clean.
 Files touched: `souvik-nandi-potfolio/src/index.css`
 
 Status: done
+
+---
+
+## [2026-09-17] Simplify Publications cards: drop expand/badges/authors, link the card (source: chat)
+
+Discussed before building (per request). Landed on:
+
+- No more expand/collapse or "Show details" — card links straight to the
+  source paper instead. Mechanism commented out in `Publications.jsx`
+  (button, `aria-expanded`, details panel with the old author list +
+  "View source" link), not deleted — explicitly asked to keep it for
+  possible future use. CSS for it (`.publication-toggle`,
+  `.publication-expand-hint`, `.publication-details`, `.publication-authors`)
+  left in place too, so restoring is a pure uncomment with no CSS work.
+- First-author and impact-factor badges, and the full author list: deleted
+  outright, not commented — explicit instruction, unlike the expand
+  mechanism. `.publication-badges`/`.badge`/`.badge-first-author`/
+  `.badge-impact-factor` CSS removed with it (confirmed via grep they
+  weren't used anywhere else — Home's `.stat-badge` is unrelated).
+- Card is the whole link: discussed two options (title-only vs whole-card)
+  — went with whole-card per the owner's call that precise clicks aren't
+  realistic "in a hurry." No semantic issue since the expand button's gone
+  — an `<a>` wrapping a card's full text content is a standard accessible
+  pattern as long as there's no OTHER interactive element nested inside it,
+  which is now the case.
+- Linking affordance: discussed several options with iconography set aside
+  (external-link arrow, "open in new window" icon, accent dot, "[PDF]"-
+  style tag, chain-link glyph); picked the external-link arrow paired with
+  text — renders as "View paper ↗" — shown only on cards that actually
+  have `pub.link`. Cards without a link render as a plain, non-interactive
+  `<div>` instead of an `<a>` — no hint text, not clickable.
+- Sort/grouping logic (in-review / impact-factor-ranked / additional-by-
+  year) is unchanged — only the per-card visual content changed, not which
+  entries land in which section or their order within it.
+
+**Verified:** all 25 cards render; of those, the 9 with a real `pub.link`
+are `<a>` elements with correct `href`/`target="_blank"`/`rel="noreferrer"`
+and the "View paper ↗" hint, the other 16 are plain `<div>`s with no hint
+and no href. No badges, no author text anywhere in the rendered output.
+Checked at 375px. No console errors; `npm run lint` and `npm run build`
+both clean.
+
+Files touched: `souvik-nandi-potfolio/src/pages/Publications.jsx`,
+`souvik-nandi-potfolio/src/index.css`
+
+Status: done

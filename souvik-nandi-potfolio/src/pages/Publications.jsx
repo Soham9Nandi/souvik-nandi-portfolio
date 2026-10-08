@@ -1,30 +1,38 @@
-import { useState } from 'react'
 import RevealCard from '../components/RevealCard'
 import { publications, inReviewPublication } from '../data/publications'
 
 function PublicationCard({ pub }) {
-  const [expanded, setExpanded] = useState(false)
-
   const metaParts = [pub.journal]
   if (pub.year) metaParts.push(pub.year)
   if (pub.status) metaParts.push(pub.status)
 
+  const body = (
+    <>
+      <h3 className="publication-title">{pub.title}</h3>
+      <p className="publication-meta">{metaParts.join(' · ')}</p>
+      {pub.link && <span className="publication-link-hint">View paper &#8599;</span>}
+    </>
+  )
+
   return (
     <RevealCard as="li" className="publication-card">
+      {pub.link ? (
+        <a href={pub.link} target="_blank" rel="noreferrer" className="publication-card-body">
+          {body}
+        </a>
+      ) : (
+        <div className="publication-card-body">{body}</div>
+      )}
+
+      {/* Expand-for-detail view — disabled for now (cards link straight to
+          the source instead), kept here in case we want it back.
       <button
         type="button"
         className="publication-toggle"
         aria-expanded={expanded}
         onClick={() => setExpanded((value) => !value)}
       >
-        <h3 className="publication-title">{pub.title}</h3>
-        <p className="publication-meta">{metaParts.join(' · ')}</p>
-        <div className="publication-badges">
-          {pub.firstAuthor && <span className="badge badge-first-author">First author</span>}
-          {pub.impactFactor != null && (
-            <span className="badge badge-impact-factor">IF {pub.impactFactor}</span>
-          )}
-        </div>
+        ...condensed content...
         <span className="publication-expand-hint">
           {expanded ? 'Hide details' : 'Show details'}
         </span>
@@ -46,6 +54,7 @@ function PublicationCard({ pub }) {
           )}
         </div>
       )}
+      */}
     </RevealCard>
   )
 }
