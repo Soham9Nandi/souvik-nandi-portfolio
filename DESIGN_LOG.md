@@ -884,3 +884,46 @@ Files touched: `souvik-nandi-potfolio/src/nav-pages.js`,
 `souvik-nandi-potfolio/src/components/Shell.jsx`
 
 Status: done
+
+---
+
+## [2026-09-17] Fix: visible focus box around heading on every tab click (source: chat)
+
+User flagged a screenshot showing a visible outline box around the
+"Patents" `<h1>` right after clicking the tab with a mouse.
+
+**Root cause:** during the tabbed-nav build, the page heading gets
+programmatic focus after every route change (`Shell.jsx`, so keyboard and
+screen-reader users land on the new content, per DESIGN_SYSTEM.md). The
+CSS for that used plain `h1:focus` rather than `h1:focus-visible`, with a
+reasoning note at the time that `:focus-visible` "didn't reliably treat a
+script-triggered `.focus()` as keyboard-initiated" in this session's test
+harness. That reasoning turned out to be an artifact of the test
+environment, not real-browser behavior — the actual verification back then
+used a synthetic `.focus()` call with no real preceding user interaction
+at all, so the browser had no input-modality context to work with either
+way. The practical effect: the ring showed up for *every* navigation,
+mouse clicks included, which is what the user saw.
+
+**Fix:** swapped `h1:focus` for `h1:focus-visible`. The programmatic focus
+move itself is unconditional (still happens on every route change, mouse
+or keyboard, which is what the accessibility requirement actually needs),
+but the *visible ring* now depends on the browser's own input-modality
+tracking.
+
+**Verified properly this time, with real input:** a real mouse click
+(`computer` tool) navigating to a page leaves `document.activeElement` on
+the new `<h1>` (focus moved, confirmed) but `:focus-visible` does not
+match and computed `outline` is `none`. A real sequence of keyboard `Tab`
+presses to a tab link, then activating it, leaves the new `<h1>` focused
+*and* matching `:focus-visible`, with a visible 2px solid outline. (Note:
+the `computer` tool's synthetic `Return` key didn't trigger the anchor's
+navigation in this harness — same class of synthetic-input gap seen
+earlier this session — so the keyboard case was completed by calling
+`.click()` on the already Tab-focused element rather than sending Enter;
+the resulting input-modality state is still keyboard-based, which is what
+mattered for this test.) `npm run lint` and `npm run build` both clean.
+
+Files touched: `souvik-nandi-potfolio/src/index.css`
+
+Status: done

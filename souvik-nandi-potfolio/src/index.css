@@ -63,12 +63,10 @@ h1 {
 }
 
 /* Page headings receive programmatic focus after each route change (see
-   Shell.jsx). tabindex="-1" elements get no default browser focus ring,
-   and :focus-visible's heuristics don't reliably treat a script-triggered
-   .focus() as keyboard-initiated, so this uses plain :focus — the h1 is
-   never a mouse target, so there's no "don't show it for clicks" case to
-   guard against here. */
-h1:focus {
+   Shell.jsx), so keyboard/screen-reader users land on the new content.
+   :focus-visible here means the ring only shows when that focus followed
+   a keyboard-driven navigation — not a plain mouse click on a tab. */
+h1:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
