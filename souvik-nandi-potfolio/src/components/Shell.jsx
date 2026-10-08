@@ -45,7 +45,7 @@ export default function Shell() {
   const afterCount = pages.length - 1 - activeIndex
 
   // The sheet's bottom edge sits a fixed --safe-bottom margin above the
-  // viewport when there's no after-stack (Contact active), or 20px above
+  // viewport when there's no after-stack (last page active), or 20px above
   // the after-stack's front tab otherwise. CSS calc() can't branch on
   // afterCount being zero, so the two shapes are built here — but the
   // actual pixel values stay in the CSS custom properties (var()), never

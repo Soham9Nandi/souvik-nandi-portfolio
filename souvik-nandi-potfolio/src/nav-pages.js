@@ -5,5 +5,6 @@ export const pages = [
   { path: '/experience', label: 'Experience' },
   { path: '/publications', label: 'Publications' },
   { path: '/patents', label: 'Patents' },
-  { path: '/contact', label: 'Contact' },
+  // Contact tab/page temporarily disabled — see DESIGN_LOG.md.
+  // { path: '/contact', label: 'Contact' },
 ]

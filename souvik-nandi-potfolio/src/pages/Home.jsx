@@ -1,6 +1,7 @@
 import profilePhoto from '../assets/profile.jpeg'
 
-const EMAIL = 'ph.souvikn@gmail.com'
+// Email CTA temporarily disabled — see DESIGN_LOG.md.
+// const EMAIL = 'ph.souvikn@gmail.com'
 
 const stats = [
   { number: '25', label: 'Peer-reviewed publications — ~5 as first author' },
@@ -42,9 +43,9 @@ export default function Home() {
           ))}
         </div>
 
-        <a className="home-cta" href={`mailto:${EMAIL}`}>
+        {/* <a className="home-cta" href={`mailto:${EMAIL}`}>
           Get in touch &mdash; {EMAIL}
-        </a>
+        </a> */}
       </div>
     </section>
   )

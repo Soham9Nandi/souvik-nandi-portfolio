@@ -840,3 +840,47 @@ Files touched: `souvik-nandi-potfolio/src/data/patents.js` (new),
 `souvik-nandi-potfolio/src/App.jsx`, `souvik-nandi-potfolio/src/index.css`
 
 Status: done
+
+---
+
+## [2026-09-17] Disable Contact tab/page and Home email CTA (source: chat)
+
+Requested: remove the Contact page, but as a comment-out rather than a
+deletion (reversible), and comment out the email link on Home too.
+
+- `nav-pages.js`: commented out the `/contact` entry in the `pages` array.
+  Nav is now 4 tabs (Home, Experience, Publications, Patents); the mobile
+  stacking math and desktop row are both computed from `pages.length`, so
+  this didn't need any other code changes — Patents is now the page with
+  no after-stack instead of Contact.
+- `App.jsx`: commented out the `/contact` Route and its now-unused
+  `Placeholder` import (would otherwise fail lint as unused).
+- `Home.jsx`: commented out the `EMAIL` constant and the `mailto:` CTA
+  link together (same reason — an unused-but-declared constant would also
+  fail lint).
+- `Shell.jsx`: updated a comment that referenced "(Contact active)" as the
+  example of the no-after-stack case, since Contact's no longer in the
+  active page set — Patents is now that example.
+
+**Flagging, not fixed:** commenting out the route (rather than deleting it)
+means there's no fallback for it — a direct visit to `/contact` (an old
+bookmark, a search-indexed link, anyone typing it) now renders a
+**completely blank page**: no header, no nav, nothing, with React Router
+logging "No routes matched location /contact" to the console. Didn't add a
+redirect or restore the placeholder for this case since it wasn't asked
+for and a redirect is itself a small design decision (send to Home? show
+the old placeholder? something else?) — flagging rather than guessing.
+
+**Verified:** nav shows exactly 4 tabs at both breakpoints; mobile stacking
+re-confirmed at 375×812 with Patents active — sheet bottom sits exactly
+24px (`--safe-bottom`) above the viewport edge, matching the no-after-stack
+case that used to belong to Contact. Home page no longer shows the email
+CTA. `npm run lint` and `npm run build` both clean (no unused-import/
+unused-var errors from the commented-out code).
+
+Files touched: `souvik-nandi-potfolio/src/nav-pages.js`,
+`souvik-nandi-potfolio/src/App.jsx`,
+`souvik-nandi-potfolio/src/pages/Home.jsx`,
+`souvik-nandi-potfolio/src/components/Shell.jsx`
+
+Status: done
