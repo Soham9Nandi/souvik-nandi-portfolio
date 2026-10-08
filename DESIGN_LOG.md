@@ -778,3 +778,65 @@ only once its real page has mounted. No console errors; `npm run lint` and
 Files touched: `souvik-nandi-potfolio/src/components/Shell.jsx`
 
 Status: done
+
+---
+
+## [2026-09-17] Patents page — details + scope decision (source: chat)
+
+Only patent data anywhere in the project (CV, docs) was the bare line "1
+published patent: 202231024247 (IP India)" — not enough to build a page
+from. Asked; got the full detail:
+
+- Title: "Transdermal drug delivery film composition and method for
+  synthesis thereof."
+- Inventors: Raghunath Hazari, Annanya Gangopadhyay, Rudra Narayan Sahoo,
+  Souvik Nandi, Rakesh Swain, Swati Biswas, Anindya Bose
+- Application number: 202231024247, IP India
+- Filed: April 25, 2022. Published: October 27, 2023.
+
+Also asked whether to draft a dedicated "Patents page layout" section in
+DESIGN_SYSTEM.md first (as was done for Publications) before building.
+Owner's call: skip the spec, build directly, log the decision here instead
+— with only one entry, a dedicated spec section was judged not worth the
+round trip.
+
+Status: requested
+
+---
+
+## [2026-09-17] Patents page — implementation (source: claude code)
+
+Built per the details above, no dedicated spec section (per the decision
+logged there).
+
+- `src/data/patents.js`: array of one patent object (title, inventors,
+  application number, jurisdiction, filed/publication dates, status) —
+  kept as an array rather than a single object since the page/CLAUDE.md
+  framing ("currently just the one patent") implies more may be added
+  later, and an array costs nothing extra for one entry.
+- `src/pages/Patents.jsx`: single `RevealCard` (`as="li"`) per patent,
+  reusing the same mount-vs-scroll visibility behavior already used on
+  Experience and Publications. No expand/collapse — unlike Publications'
+  dense citations, everything here already fits in the condensed view, so
+  a toggle would just be an extra click for no reason.
+- CSS: new `.patent-card`/`.patent-title`/`.patent-meta`/`.patent-inventors`
+  rules mirroring the existing `.publication-card` visual treatment
+  (`--surface` fill, 1px `--border`, 10px radius) rather than sharing that
+  class directly — kept each page's styles self-contained rather than
+  naming a Patents element after Publications.
+- Wired `/patents` to the real page in `App.jsx`, replacing the
+  placeholder. No nav changes needed — `NavTabs` has no "ready/dimming"
+  concept since the tabbed-nav rebuild, so the tab already behaved
+  identically to the others.
+
+**Verified:** loaded `/patents` at 375px and 1280px — all fields render
+correctly, the card is `opacity: 1` immediately on load (already in view,
+no scroll-gated flash), Patents tab shows active with no dimming, Contact
+still stacks correctly after it. No console errors; `npm run lint` and
+`npm run build` both clean.
+
+Files touched: `souvik-nandi-potfolio/src/data/patents.js` (new),
+`souvik-nandi-potfolio/src/pages/Patents.jsx` (new),
+`souvik-nandi-potfolio/src/App.jsx`, `souvik-nandi-potfolio/src/index.css`
+
+Status: done

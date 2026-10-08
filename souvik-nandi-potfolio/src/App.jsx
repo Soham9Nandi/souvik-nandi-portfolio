@@ -3,6 +3,7 @@ import Shell from './components/Shell'
 import Home from './pages/Home'
 import Experience from './pages/Experience'
 import Publications from './pages/Publications'
+import Patents from './pages/Patents'
 import Placeholder from './pages/Placeholder'
 
 function App() {
@@ -12,7 +13,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/experience" element={<Experience />} />
         <Route path="/publications" element={<Publications />} />
-        <Route path="/patents" element={<Placeholder title="Patents & Research" />} />
+        <Route path="/patents" element={<Patents />} />
         <Route path="/contact" element={<Placeholder title="Contact" />} />
       </Route>
     </Routes>

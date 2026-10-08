@@ -632,6 +632,39 @@ p {
   font-weight: 600;
 }
 
+/* Patents */
+
+.patents-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.patent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: var(--space-md);
+}
+
+.patent-title {
+  max-width: 65ch;
+}
+
+.patent-meta {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  margin-top: 6px;
+}
+
+.patent-inventors {
+  margin-top: var(--space-sm);
+  max-width: 65ch;
+}
+
 /* Placeholder */
 
 .placeholder-page {
